@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
@@ -52,7 +53,7 @@ namespace OpenMMO.Portals
 		protected string autoPlayerName 			= "";
     	protected bool autoConnectClient 			= false;
 		protected string mainZoneName				= "_mainZone";
-		protected const string argZoneIndex 		= "zone";
+		protected const string argZoneIndex 		= "-zone";
 		
 		// -------------------------------------------------------------------------------
     	// Awake
@@ -167,7 +168,7 @@ namespace OpenMMO.Portals
 
 			if (!GetIsMainZone || !active)
 				return;
-			
+debug.Log("SpawnSubZones");		
 			InvokeRepeating(nameof(SaveZone), 0, zoneIntervalMain);
 			
 			for (int i = 0; i < subZones.Count; i++)
@@ -180,10 +181,19 @@ namespace OpenMMO.Portals
     	// SpawnSubZone
     	// -------------------------------------------------------------------------------
 		protected void SpawnSubZone(int index)
-		{
+		{	
+			
+			debug.Log("Spawning Sub Zone...");
+			
+			// DEBUG START
+			String[] args = System.Environment.GetCommandLineArgs();
+			debug.Log("-->PATH: "+ Tools.GetProcessPath);
+			debug.Log("-->ARGS: " + argZoneIndex + " " + index.ToString());
+			// DEBUG END
+		
 			Process process = new Process();
-			process.StartInfo.FileName = Tools.GetProcessPath;
-			process.StartInfo.Arguments = Tools.GetArgumentsString + " " + argZoneIndex + " " + index.ToString();
+			process.StartInfo.FileName 	= Tools.GetProcessPath; //Path.GetFullPath(".") + "/test.app"; //Application.dataPath; //Tools.GetProcessPath;
+			process.StartInfo.Arguments = argZoneIndex + " " + index.ToString(); // Tools.GetArgumentsString + " " + argZoneIndex + " " + index.ToString();
 			process.Start();
 		}
 		
