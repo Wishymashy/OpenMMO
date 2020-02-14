@@ -3,13 +3,14 @@ using OpenMMO;
 using OpenMMO.Database;
 using System;
 using SQLite;
+using UnityEngine;
 
 namespace OpenMMO.Database
 {
 
-	// -------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------
 	// TablePlayerZones
-	// -------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------
 	public partial class TablePlayerZones
 	{
 		[PrimaryKey]
@@ -17,17 +18,23 @@ namespace OpenMMO.Database
 		public string 	zonename 	{ get; set; }
 		public string	anchorname  { get; set; }
 		public int		token		{ get; set; }
+		
+		public bool ValidateToken(int _token)
+		{
+			Debug.Log("TOKEN:"+token+"/"+_token);
+			return (token == _token);
+		}
+		
 	}
 	
-	// -------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------
 	// TableNetworkZones
-	// -------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------
 	public partial class TableNetworkZones
 	{
 		[PrimaryKey]
 		public string	zone 	{ get; set; }
 		public string 	online 	{ get; set; }
-		public int 		players { get; set; }
 	}
 	
 	// -----------------------------------------------------------------------------------
