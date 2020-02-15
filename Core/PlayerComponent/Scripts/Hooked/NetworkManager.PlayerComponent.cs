@@ -10,97 +10,155 @@ using Mirror;
 
 namespace OpenMMO.Network
 {
-
     // ===================================================================================
-	// NetworkManager
-	// ===================================================================================
-	public partial class NetworkManager
-	{
-				
-		protected List<GameObject> _playerPrefabs = null;
-		
-		// -------------------------------------------------------------------------------
-		// LoginPlayer_PlayerComponent
-		// -------------------------------------------------------------------------------
-		[DevExtMethods("LoginPlayer")]
-		public void LoginPlayer_PlayerComponent(NetworkConnection conn, GameObject player, GameObject prefab, string userName, string playerName)
-		{
-			player.GetComponent<PlayerComponent>().tablePlayer.Update(prefab, userName);
-		}
-		
-		// -------------------------------------------------------------------------------
-		// RegisterPlayer_PlayerComponent
-		// -------------------------------------------------------------------------------
-		[DevExtMethods("RegisterPlayer")]
-		public void RegisterPlayer_PlayerComponent(GameObject player, string userName, string prefabName)
-		{
-			player.transform.position = GetStartPosition(player).position;
-			player.GetComponent<PlayerComponent>().tablePlayer.Create(player, userName, prefabName);
-		}
-		
-		// ================================== PUBLIC =====================================
-		
-		// -------------------------------------------------------------------------------
-		// playerPrefabs
-		// -------------------------------------------------------------------------------
-		public List<GameObject> playerPrefabs
-		{
-			get
-			{
-				if (_playerPrefabs == null)
-					FilterPlayerPrefabs();
-				return _playerPrefabs;
-			}
-		}
+    // NetworkManager
+    // ===================================================================================
+    public partial class NetworkManager
+    {
+        [Header("SERVER AUTHORITY PROFILE")]
+        [SerializeField] public ServerAuthority serverAuthority;
 
-		// ================================== PROTECTED ==================================
-		
-		// -------------------------------------------------------------------------------
-		// GetStartPosition
-		// -------------------------------------------------------------------------------
-		protected Transform GetStartPosition(GameObject player)
-		{
-			
-			//TODO: Add start position randomization here
-			
-			foreach (Transform startPosition in startPositions)
-			{
-			
-				OpenMMO.Network.NetworkStartPosition position = startPosition.GetComponent<OpenMMO.Network.NetworkStartPosition>();
-				
-				if (position == null || position.archeTypes.Length == 0)
-					continue;
-				
-				PlayerComponent playerComponent = player.GetComponent<PlayerComponent>();
-				
-				foreach (ArchetypeTemplate template in position.archeTypes)
-					if (template == playerComponent.archeType)
-						return position.transform;
-						
-			}
-			
-			return GetStartPosition();
-		
-		}
-		
-		// -------------------------------------------------------------------------------
-		// ValidatePlayerPosition
-		// -------------------------------------------------------------------------------
-		protected void ValidatePlayerPosition(GameObject player)
-		{
+        protected List<GameObject> _playerPrefabs = null;
 
-			Transform transform = player.transform;
-			
-			if (!NavMesh.SamplePosition(player.transform.position, out NavMeshHit hit, 0.1f, NavMesh.AllAreas))
-				transform = GetStartPosition(player);
+#if UNITY_EDITOR
+        private new void OnValidate()
+        {
+            if (!serverAuthority) serverAuthority = Resources.Load<ServerAuthority>("Config/DefaultServerAuthority");
+            base.OnValidate(); //TODO: Does this make it Validate twice? - TESTERS: place debug statements in the base method to find out...I expect it will not, but please verify
+        }
+#endif
+        // -------------------------------------------------------------------------------
+        // LoginPlayer_PlayerComponent
+        // -------------------------------------------------------------------------------
+        [DevExtMethods("LoginPlayer")]
+        public void LoginPlayer_PlayerComponent(NetworkConnection conn, GameObject player, GameObject prefab, string userName, string playerName)
+        {
+            player.GetComponent<PlayerComponent>().tablePlayer.Update(prefab, userName);
+        }
+        
+        // -------------------------------------------------------------------------------
+        // RegisterPlayer_PlayerComponent
+        // -------------------------------------------------------------------------------
+        [DevExtMethods("RegisterPlayer")]
+        public void RegisterPlayer_PlayerComponent(GameObject player, string userName, string prefabName)
+        {
+            player.transform.position = GetStartPosition(player).position;
+            player.GetComponent<PlayerComponent>().tablePlayer.Create(player, userName, prefabName);
+        }
 
-            if (transform != player.transform)
-			{ 
-			    player.GetComponent<PlayerComponent>().Warp(transform.position);
-				debug.Log("Player position not on navMesh, warping to start position instead.");
-			}
-			
-		}
+        // ================================== PUBLIC =====================================
+
+        // -------------------------------------------------------------------------------
+        // playerPrefabs
+        // -------------------------------------------------------------------------------
+        public List<GameObject> playerPrefabs
+        {
+            get
+            {
+                if (_playerPrefabs == null)
+                    FilterPlayerPrefabs();
+                return _playerPrefabs;
+            }
+        }
+
+        // ================================== PROTECTED ==================================
+
+        // -------------------------------------------------------------------------------
+        // GetStartPosition
+        // -------------------------------------------------------------------------------
+        protected Transform GetStartPosition(GameObject player)
+        {
+
+            //TODO: Add start position randomization here
+
+            foreach (Transform startPosition in startPositions)
+            {
+
+                OpenMMO.Network.NetworkStartPosition position = startPosition.GetComponent<OpenMMO.Network.NetworkStartPosition>();
+
+                if (position == null || position.archeTypes.Length == 0)
+                    continue;
+
+                PlayerComponent playerComponent = player.GetComponent<PlayerComponent>();
+
+                foreach (ArchetypeTemplate template in position.archeTypes)
+                    if (template == playerComponent.archeType)
+                        return position.transform;
+
+            }
+
+            return GetStartPosition();
+
+        }
+        
+        // -------------------------------------------------------------------------------
+        // ValidatePlayerPosition
+        // -------------------------------------------------------------------------------
+        protected void ValidatePlayerPosition(GameObject player)
+        {
+            Transform transform = player.transform;
+
+            if (!NavMesh.SamplePosition(player.transform.position, out NavMeshHit hit, 0.1f, NavMesh.AllAreas))
+                transform = GetStartPosition(player);
+
+
+            if (!ValidPosition(player.transform))
+            {
+                if (serverAuthority.smooth)
+                {
+                    //SMOOTH POSITION
+                    Vector3 smoothedPosition = Vector3.Lerp(player.transform.position, transform.position, Time.deltaTime * serverAuthority.smoothing);
+
+                    //WARP
+                    player.GetComponent<PlayerComponent>().Warp(smoothedPosition);
+
+                    Debug.LogWarning("TODO: SMOOTH MOVE IS IMPLEMENTED\nI HAVE NO IDEA WHAT THE smoothing factor should be...\nTESTERS: please test by building server + client in editor and try to change your player position...\nNOTE: You should not be out of sync with other players. TESTERS: verify this");
+                }
+                else
+                {
+                    player.GetComponent<PlayerComponent>().Warp(transform.position);
+                }
+            }
+
+        }
+
+        //[Server]
+        bool ValidPosition(Transform playerTransform)
+        {
+            switch (serverAuthority.validation)
+            {
+                case ValidationLevel.Complete:
+                    {
+                        return (transform == playerTransform);
+                    }
+                case ValidationLevel.Tolerant:
+                    {
+                        return (
+                            //X
+                            ( playerTransform.position.x >= transform.position.x - serverAuthority.tolerence
+                                && playerTransform.position.x <= transform.position.x + serverAuthority.tolerence)
+                            //Y
+                            && (playerTransform.position.y >= transform.position.y - serverAuthority.tolerence
+                                && transform.position.y <= playerTransform.position.y + serverAuthority.tolerence)
+                            //Z
+                            && (transform.position.z >= playerTransform.position.z - serverAuthority.tolerence
+                                && transform.position.z <= playerTransform.position.z + serverAuthority.tolerence)
+                           //NOTE: Rotation can be turned on here, but it barely matters for this purpose
+                           // && (transform.rotation != playerTransform.rotation) //ROTATION - I don't think we care? Some games might, so just leave this here
+                            );
+                    }
+                case ValidationLevel.Low:
+                    {
+                        return (transform.position != playerTransform.position);
+                    }
+                case ValidationLevel.None:
+                    {
+                        return true;
+                    }
+            }
+
+            return false;
+        }
 		
 		// -------------------------------------------------------------------------------
 		// GetPlayerPrefab
