@@ -456,6 +456,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91a1d1fb34f9618488af5feeced35de5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  alwaysPointUp: 1
   tickFrequency: 5
 --- !u!114 &6293004362055142396
 MonoBehaviour:

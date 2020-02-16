@@ -15,4 +15,4 @@ MonoBehaviour:
   validation: 0
   tolerence: 7
   smooth: 1
-  smoothing: 1
+  smoothing: 10
