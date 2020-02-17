@@ -1,4 +1,4 @@
-﻿
+
 using OpenMMO;
 using OpenMMO.Database;
 using UnityEngine;
@@ -21,29 +21,16 @@ namespace OpenMMO.Database
 		// -------------------------------------------------------------------------------
 		// Init_User
 		// -------------------------------------------------------------------------------
-		[DevExtMethods("Init")]
+		[DevExtMethods(nameof(Init))]
 		void Init_User()
 		{
 	   		CreateTable<TableUser>();
 		}
 		
-	   	// -------------------------------------------------------------------------------
-	   	// CreateDefaultDataUser_User
-	   	// -------------------------------------------------------------------------------
-	   	[DevExtMethods("CreateDefaultDataUser")]
-		void CreateDefaultDataUser_User(GameObject player)
-		{
-			/*
-				users have no default data, feel free to add your own
-				
-				instead, user data is saved/loaded as part of the register/login process
-			*/
-		}
-		
 		// -------------------------------------------------------------------------------
 		// LoadDataWithPriority_User
 		// -------------------------------------------------------------------------------
-		[DevExtMethods("LoadDataPlayerPriority")]
+		[DevExtMethods(nameof(LoadDataPlayerPriority))]
 		void LoadDataPlayerPriority_User(GameObject player)
 		{
 			/*
@@ -56,7 +43,7 @@ namespace OpenMMO.Database
 	   	// -------------------------------------------------------------------------------
 	   	// LoadDataPlayer_User
 	   	// -------------------------------------------------------------------------------
-		[DevExtMethods("LoadDataPlayer")]
+		[DevExtMethods(nameof(LoadDataPlayer))]
 		void LoadDataPlayer_User(GameObject player)
 		{
 	   		/*
@@ -65,26 +52,11 @@ namespace OpenMMO.Database
 				instead, user data is saved/loaded as part of the register/login process
 			*/
 		}
-		
-		// -------------------------------------------------------------------------------
-	   	// LoadDataUser_User
-	   	// we simply fetch the table that is present on the local player object instead
-	   	// of copy-pasting all the individual properties, update it and forward it to the db
-	   	// -------------------------------------------------------------------------------
-		[DevExtMethods("LoadDataUser")]
-		void LoadDataUser_User(GameObject player)
-		{
-	   	/*
-				users do not load any data, feel free to add your own
-				
-				instead, user data is saved/loaded as part of the register/login process
-			*/
-		}
-		
+
 		// -------------------------------------------------------------------------------
 	   	// SaveDataPlayer_User
 	   	// -------------------------------------------------------------------------------
-		[DevExtMethods("SaveDataPlayer")]
+		[DevExtMethods(nameof(SaveDataPlayer))]
 		void SaveDataPlayer_User(GameObject player)
 		{
 	   		/*
@@ -97,7 +69,7 @@ namespace OpenMMO.Database
 	   	// we simply fetch the table that is present on the local player object instead
 	   	// of copy-pasting all the individual properties, update it and forward it to the db
 	   	// -------------------------------------------------------------------------------
-		[DevExtMethods("SaveDataUser")]
+		[DevExtMethods(nameof(SaveDataUser))]
 		void SaveDataUser_User(string username)
 		{
 	   		Execute("UPDATE "+nameof(TableUser)+" SET lastsaved=? WHERE username=?", DateTime.UtcNow, username);
@@ -106,7 +78,7 @@ namespace OpenMMO.Database
 		// -------------------------------------------------------------------------------
 	   	// LoginUser_User
 	   	// -------------------------------------------------------------------------------
-	   	[DevExtMethods("LoginUser")]
+	   	[DevExtMethods(nameof(LoginUser))]
 	   	void LoginUser_User(string username)
 	   	{
 	   		
@@ -115,7 +87,7 @@ namespace OpenMMO.Database
 		// -------------------------------------------------------------------------------
 	   	// LogoutUser_User
 	   	// -------------------------------------------------------------------------------
-	   	[DevExtMethods("LogoutUser")]
+	   	[DevExtMethods(nameof(LogoutUser))]
 	   	void LogoutUser_User(string username)
 	   	{
 	   		
@@ -125,7 +97,7 @@ namespace OpenMMO.Database
 	   	// DeleteDataUser_User
 	   	// Note: This one is not called "DeleteDataPlayer" because its the user, not a player
 	   	// -------------------------------------------------------------------------------
-	   	[DevExtMethods("DeleteDataUser")]
+	   	[DevExtMethods(nameof(DeleteDataUser))]
 	   	void DeleteDataUser_User(string name)
 	   	{
 	   		Execute("DELETE FROM "+nameof(TableUser)+" WHERE username=?", name);

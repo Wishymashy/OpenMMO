@@ -83,9 +83,7 @@ namespace OpenMMO {
 		protected void Cmd_WarpRemote(string anchorName, string zoneName, int token)
 		{
 			if (!String.IsNullOrWhiteSpace(anchorName) && !String.IsNullOrWhiteSpace(zoneName))
-			{
 				WarpRemote(anchorName, zoneName, token);
-			}
 		}
 		
 		// -------------------------------------------------------------------------------
@@ -99,7 +97,7 @@ namespace OpenMMO {
     		
     		NetworkZoneTemplate template = NetworkZoneTemplate.GetZoneBySceneName(zoneName);
     		
-    		UpdateCooldown(20);
+    		UpdateCooldown(GameRulesTemplate.singleton.remoteWarpDelay);
     		
     		// -- update anchor & zone
     		this.GetComponent<PlayerComponent>().tablePlayerZones.anchorname = anchorName;
@@ -127,7 +125,7 @@ namespace OpenMMO {
     		if (AnchorManager.CheckPortalAnchor(anchorName))
         		base.Warp(AnchorManager.GetPortalAnchorPosition(anchorName));
         	
-        	UpdateCooldown(20);
+        	UpdateCooldown(GameRulesTemplate.singleton.localWarpDelay);
         	
 		}
 		

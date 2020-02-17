@@ -16,18 +16,17 @@ namespace OpenMMO.Portals
 {
 
 	// ===================================================================================
-	// NetworkPortal
+	// MultiNetworkPortal
 	// ===================================================================================
 	[DisallowMultipleComponent]
-	public class NetworkPortal : BasePortal
+	public class MultiNetworkPortal : BasePortal
 	{
 	
 		[Header("Teleportation")]
 		[Tooltip("Target Network Zone to teleport to (optional)")]
 		public NetworkZoneTemplate targetZone;
 		[Tooltip("Anchor name in the target scene to teleport to")]
-		public string targetAnchor;
-		
+		public string[] targetAnchors;
 		
 		public string popupZoning 	= "Zoning, please wait...";
 		
@@ -75,14 +74,17 @@ namespace OpenMMO.Portals
 			
 			if (!player)
 				return;
-				
+			
+			int index = UnityEngine.Random.Range(0, targetAnchors.Length);
+			string targetAnchor = targetAnchors[index];
+			
 			if (player && targetZone != null && !String.IsNullOrWhiteSpace(targetAnchor))
 				player.GetComponent<PlayerComponent>().WarpRemote(targetAnchor, targetZone.name);
 			
 			base.OnClickConfirm();
 			
 			if (UIPopupNotify.singleton)
-				UIPopupNotify.singleton.Init(popupZoning, 5f, false);
+				UIPopupNotify.singleton.Init(popupZoning, 10f, false);
 			
 		}
 		

@@ -1,4 +1,4 @@
-﻿
+
 using OpenMMO;
 using OpenMMO.Network;
 using OpenMMO.UI;
@@ -37,6 +37,17 @@ namespace OpenMMO.UI
 		
 		protected int index = -1;
 		
+		public static UIWindowPlayerCreate singleton;
+		
+		// -------------------------------------------------------------------------------
+		// Awake
+		// -------------------------------------------------------------------------------
+		protected override void Awake()
+		{
+			singleton = this;
+			base.Awake();
+		}
+		
 		// -------------------------------------------------------------------------------
 		// Show
 		// -------------------------------------------------------------------------------
@@ -52,14 +63,12 @@ namespace OpenMMO.UI
 		protected override void ThrottledUpdate()
 		{
 		
-			this.InvokeInstanceDevExtMethods(nameof(ThrottledUpdate));
+			this.InvokeInstanceDevExtMethods(nameof(ThrottledUpdate)); //HOOK
 			
 			// -- Available Players
 			UpdatePlayerIndex();
 			
 			// -- Buttons
-			
-			
 			createButton.interactable = (index != -1 && networkManager.CanRegisterPlayer(playernameInput.text) );
 			createButton.onClick.SetListener(() => { OnClickCreate(); });
 			

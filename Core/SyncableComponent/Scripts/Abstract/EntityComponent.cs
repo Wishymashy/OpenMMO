@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Text;
 using System.Collections.Generic;
@@ -20,7 +20,9 @@ namespace OpenMMO {
 		[Header("Components")]
 		public NavMeshAgent agent;
 		public NetworkProximityChecker proxChecker;
+#pragma warning disable CS0109
 		public new Collider collider;
+#pragma warning restore CS0109
 		
 		[Header("Default Data")]
 		public ArchetypeTemplate archeType;
@@ -46,7 +48,7 @@ namespace OpenMMO {
 		[Server]
 		protected override void UpdateServer()
 		{
-			this.InvokeInstanceDevExtMethods(nameof(UpdateServer));
+			this.InvokeInstanceDevExtMethods(nameof(UpdateServer)); //HOOK
 		}
 		
 		// -------------------------------------------------------------------------------
@@ -55,7 +57,7 @@ namespace OpenMMO {
 		[Client]
 		protected override void UpdateClient()
 		{
-			this.InvokeInstanceDevExtMethods(nameof(UpdateClient));
+			this.InvokeInstanceDevExtMethods(nameof(UpdateClient)); //HOOK
 		}
 		
 		// -------------------------------------------------------------------------------

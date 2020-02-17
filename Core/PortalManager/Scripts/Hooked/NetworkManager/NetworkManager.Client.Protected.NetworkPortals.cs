@@ -21,7 +21,7 @@ namespace OpenMMO.Network
 		// OnStartClient_NetworkPortals
 		// @Client
 		// -----------------------------------------------------------------------------------
-		[DevExtMethods("OnStartClient")]
+		[DevExtMethods(nameof(OnStartClient))]
 		void OnStartClient_NetworkPortals()
 		{
 			NetworkClient.RegisterHandler<ServerMessageResponsePlayerSwitchServer>(GetComponent<PortalManager>().OnServerMessageResponsePlayerSwitchServer);
@@ -36,8 +36,6 @@ namespace OpenMMO.Network
         // -------------------------------------------------------------------------------
         protected bool RequestPlayerAutoLogin(NetworkConnection conn, string playerName, string userName, int _token)
 		{
-		
-			Debug.Log("RequestPlayerAutoLogin:"+playerName+"/"+userName);
 		
 			if (!base.RequestPlayerLogin(conn, playerName, userName))
 				return false;

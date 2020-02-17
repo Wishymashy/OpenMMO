@@ -19,7 +19,8 @@ namespace OpenMMO.UI
 	// ===================================================================================
 	public partial class UIBackgroundLayer : UIRoot 
 	{
-
+		
+		[SerializeField] protected GameObject blackBackground;
 		[SerializeField] protected Animator animator;
 		[SerializeField] protected string fadeInTriggerName = "fadeIn";
 		[SerializeField] protected string fadeOutTriggerName = "fadeOut";
@@ -33,6 +34,19 @@ namespace OpenMMO.UI
 		{
 			singleton = this;
 			base.Awake();
+		}
+		
+		// -------------------------------------------------------------------------------
+		// BlackIn
+		// Immediately shows the full black background (no fading animation)
+		// -------------------------------------------------------------------------------
+		public void BlackIn(float duration=0f)
+		{
+			
+			blackBackground.SetActive(true);
+			
+			if (duration > 0)
+				Invoke(nameof(BlackOutDelayed), duration);
 		}
 		
 		// -------------------------------------------------------------------------------
@@ -51,8 +65,29 @@ namespace OpenMMO.UI
 		// -------------------------------------------------------------------------------
 		protected void FadeInDelayed()
 		{
-			animator.SetTrigger(fadeInTriggerName);
+			if (root.activeSelf)
+				animator.SetTrigger(fadeInTriggerName);
 			Show();
+		}
+		
+		// -------------------------------------------------------------------------------
+		// BlackOut
+		// Immediately hides the full black background (no fading animation)
+		// -------------------------------------------------------------------------------
+		public void BlackOut(float delay=0f)
+		{
+			if (delay > 0)
+				Invoke(nameof(BlackOutDelayed), delay);
+			else
+				blackBackground.SetActive(false);
+		}
+		
+		// -------------------------------------------------------------------------------
+		// BlackOutDelayed
+		// -------------------------------------------------------------------------------
+		protected void BlackOutDelayed()
+		{
+			blackBackground.SetActive(false);
 		}
 		
 		// -------------------------------------------------------------------------------
@@ -71,14 +106,23 @@ namespace OpenMMO.UI
 		// -------------------------------------------------------------------------------
 		protected void FadeOutDelayed()
 		{
-			animator.SetTrigger(fadeOutTriggerName);
+		
+			if (root.activeSelf)
+				animator.SetTrigger(fadeOutTriggerName);
+			
 			StartCoroutine(nameof(DeactivateWindow));
 		}
 		
 		// -------------------------------------------------------------------------------
 		protected IEnumerator DeactivateWindow()
 		{
-			yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
+			
+			float delay = 0;
+			
+			if (root.activeSelf)
+				delay = animator.GetCurrentAnimatorStateInfo(0).length;
+				
+			yield return new WaitForSeconds(delay);
 			Hide();
 		}
 		
