@@ -28,19 +28,9 @@ namespace OpenMMO.Network
 			NetworkServer.RegisterHandler<ClientMessageRequestPlayerSwitchServer>(OnClientMessageRequestPlayerSwitchServer);
             NetworkServer.RegisterHandler<ClientMessageRequestPlayerAutoLogin>(OnClientMessageRequestPlayerAutoLogin);
             
-            Invoke(nameof(SpawnSubZones), 0.5f);
-		}
-   		
-   		// -----------------------------------------------------------------------------------
-		// SpawnSubZones
-		// Called slightly delayed via Invoke, otherwise it might be called before/during Awake
-		// @Server
-		// -----------------------------------------------------------------------------------
-   		void SpawnSubZones()
-   		{
-   			if (GetComponent<PortalManager>() != null)
+            if (GetComponent<PortalManager>() != null)
    				GetComponent<PortalManager>().SpawnSubZones();
-   		}
+		}
    		
 		// -------------------------------------------------------------------------------
 		// LoginPlayer_NetworkPortals
@@ -187,13 +177,17 @@ namespace OpenMMO.Network
 					// -- update zone
 					pc.tablePlayerZones.zonename = pc.currentZone.name;
 					
-					// -- warp to anchor location
-					string anchorName = pc.tablePlayerZones.anchorname;
-					
 					NetworkServer.AddPlayerForConnection(conn, player);
 					
-					pc.WarpLocal(anchorName);
-
+					// -- warp to anchor location
+					// -- OR use start position if anchor is empty
+					string anchorName = pc.tablePlayerZones.anchorname;
+					
+					if (!String.IsNullOrWhiteSpace(anchorName))
+						pc.WarpLocal(anchorName);
+					else
+						player.transform.position = GetStartPosition(player).position;
+					
 					ValidatePlayerPosition(player);
 					
 					onlinePlayers[player.name] = player;
