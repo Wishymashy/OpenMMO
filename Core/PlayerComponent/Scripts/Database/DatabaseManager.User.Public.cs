@@ -1,10 +1,10 @@
-﻿
-using OpenMMO;
-using OpenMMO.Database;
-using UnityEngine;
+
+//using OpenMMO;
+//using OpenMMO.Database;
+//using UnityEngine;
 using System;
-using System.IO;
-using System.Collections.Generic;
+//using System.IO;
+//using System.Collections.Generic;
 
 namespace OpenMMO.Database
 {
@@ -14,7 +14,50 @@ namespace OpenMMO.Database
 	// ===================================================================================
 	public partial class DatabaseManager
 	{
-				
+		
+		
+		// -------------------------------------------------------------------------------
+		// GetUserOnline
+		// 
+		// -------------------------------------------------------------------------------
+		public bool GetUserOnline(string userName)
+		{
+			TableUser tableUser = FindWithQuery<TableUser>("SELECT * FROM "+nameof(TableUser)+" WHERE username=? AND banned=0 AND deleted=0", userName);
+			
+            //DEPRECIATED
+			//if (tableUser != null && tableUser.lastlogin == DateTime.MinValue)
+			//	debug.Log("[TIME IS MINVALUE]");
+			
+			if (tableUser == null || (tableUser != null && tableUser.lastlogin <= DateTime.MinValue)) //NOTE: "<=" used instead of "==" just to be safe (in case one day we use NetworkTime.time or a double value)
+			{
+				return false;
+			}
+			else
+			{
+                /* //DEPRECIATED
+                TimeSpan timesincelastlogin = (DateTime.Now.ToUniversalTime() - tableUser.lastlogin);
+                double timePassed = timesincelastlogin.TotalSeconds;
+                Debug.Log("<b>[LOGIN TIME STAMP]</b>"
+                    + "\n last login time:" + tableUser.lastlogin
+                    + "\n next login time:" + nextAllowedLoginTime
+
+                    + "\n\n current local time:" + DateTime.Now
+                    + "\n current UTC time:" + DateTime.Now.ToUniversalTime()
+
+                    + "\n\n duration until next login:" + timesincelastlogin
+                    + "\n time since last login:" + timePassed
+                    + "\n save interval:" + saveInterval);
+                    */
+
+                //NOTE: We double the save interval here as a failsafe, otherwise there are small windows of opportunity to login twice during world saves.
+                DateTime nextAllowedLoginTime = tableUser.lastlogin.AddSeconds(saveInterval * 2.0f); //NEW
+                return DateTime.Now.ToUniversalTime() <= nextAllowedLoginTime; //NEW
+                //return timePassed <= saveInterval; //DEPRECIATED
+            }
+            //END TEST
+			
+		}
+		
 		// ============================== PUBLIC METHODS =================================
 		
 		// -------------------------------------------------------------------------------
@@ -26,7 +69,6 @@ namespace OpenMMO.Database
 			if (!base.TryUserLogin(name, password) || !UserValid(name, password))
 				return false;
 			
-			LoginUser(name);
 			return true;
 			
 		}

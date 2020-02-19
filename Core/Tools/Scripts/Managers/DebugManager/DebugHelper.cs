@@ -37,8 +37,10 @@ namespace OpenMMO.DebugManager
 		// -------------------------------------------------------------------------------
 		public void Log(string message)
 		{
-			if (debugMode)
-				UnityEngine.Debug.Log(message);
+			if (!debugMode) return;
+			string trace = new System.Diagnostics.StackTrace().ToString();
+			UnityEngine.Debug.Log("<b>"+message+"</b>\n"+trace);
+			
 		}
 		
 		// -------------------------------------------------------------------------------
@@ -47,8 +49,9 @@ namespace OpenMMO.DebugManager
 		// -------------------------------------------------------------------------------
 		public void LogWarning(string message)
 		{
-			if (debugMode)
-				UnityEngine.Debug.LogWarning(message);
+			if (!debugMode) return;
+			string trace = new System.Diagnostics.StackTrace().ToString();
+			UnityEngine.Debug.LogWarning("<b>"+message+"</b>\n"+trace);
 		}
 		
 		// -------------------------------------------------------------------------------
@@ -57,8 +60,9 @@ namespace OpenMMO.DebugManager
 		// -------------------------------------------------------------------------------
 		public void LogError(string message)
 		{
-			if (debugMode)
-				UnityEngine.Debug.LogError(message);
+			if (!debugMode) return;
+			string trace = new System.Diagnostics.StackTrace().ToString();
+			UnityEngine.Debug.LogError("<b>"+message+"</b>\n"+trace);
 		}
 		
 		// -------------------------------------------------------------------------------

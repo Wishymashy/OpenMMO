@@ -90,6 +90,7 @@ namespace OpenMMO.Network
 				causesDisconnect 	= false
 			};
 			
+			// -- check for UserLoggedIn because that covers all players on the account
 			if (!UserLoggedIn(msg.username) && DatabaseManager.singleton.TryUserLogin(msg.username, msg.password))
 			{
 				LoginUser(conn, msg.username);
@@ -128,7 +129,7 @@ namespace OpenMMO.Network
 				text			 	= "",
 				causesDisconnect 	= false
 			};
-
+			
         	if (DatabaseManager.singleton.TryUserRegister(msg.username, msg.password, msg.email, msg.deviceid))
 			{
 				DatabaseManager.singleton.SaveDataUser(msg.username, false);
@@ -163,8 +164,8 @@ namespace OpenMMO.Network
 				text			 	= "",
 				causesDisconnect 	= false
 			};
-        	
-        	if (DatabaseManager.singleton.TryUserDelete(msg.username, msg.password))
+			
+        	if (!UserLoggedIn(msg.username) && DatabaseManager.singleton.TryUserDelete(msg.username, msg.password))
 			{
 				message.text = systemText.userDeleteSuccess;
 			}
@@ -197,8 +198,8 @@ namespace OpenMMO.Network
 				text			 	= "",
 				causesDisconnect 	= false
 			};
-        	
-        	if (DatabaseManager.singleton.TryUserChangePassword(msg.username, msg.oldPassword, msg.newPassword))
+			
+        	if (!UserLoggedIn(msg.username) && DatabaseManager.singleton.TryUserChangePassword(msg.username, msg.oldPassword, msg.newPassword))
 			{
 				message.text = systemText.userChangePasswordSuccess;
 			}
@@ -232,7 +233,7 @@ namespace OpenMMO.Network
 				causesDisconnect 	= false
 			};
         	
-        	if (DatabaseManager.singleton.TryUserConfirm(msg.username, msg.password))
+        	if (!UserLoggedIn(msg.username) && DatabaseManager.singleton.TryUserConfirm(msg.username, msg.password))
 			{
 				message.text = systemText.userConfirmSuccess;
 			}
@@ -263,12 +264,13 @@ namespace OpenMMO.Network
 			
 			ServerMessageResponsePlayerLogin message = new ServerMessageResponsePlayerLogin
 			{
-				success = true,
+				success 			= true,
 				text			 	= "",
 				causesDisconnect 	= false
 			};
 			
-			if (DatabaseManager.singleton.TryPlayerLogin(msg.playername, msg.username))
+			// -- check for UserLoggedIn because that covers all players on the account
+			if (!UserLoggedIn(msg.username) && DatabaseManager.singleton.TryPlayerLogin(msg.playername, msg.username))
 			{
 				LoginPlayer(conn, msg.username, msg.playername);
 				message.text = systemText.playerLoginSuccess;
@@ -278,7 +280,7 @@ namespace OpenMMO.Network
 				message.text = systemText.playerLoginFailure;
 				message.success = false;
 			}
-					
+			
 			conn.Send(message);
 			
 		}
@@ -371,6 +373,9 @@ namespace OpenMMO.Network
 			{
 				onlineUsers[conn] = name;
 			    state = NetworkState.Lobby;
+			    
+			    DatabaseManager.singleton.LoginUser(username);
+			    
 			    this.InvokeInstanceDevExtMethods(nameof(LoginUser)); //HOOK
 			}
 			else
@@ -391,27 +396,24 @@ namespace OpenMMO.Network
         /// <param name="playername"></param>
 		protected void LoginPlayer(NetworkConnection conn, string username, string playername)
 		{
-			if (!UserLoggedIn(username))
-			{
+	
+			DatabaseManager.singleton.LoginPlayer(playername, username);
 			
-				string prefabname = DatabaseManager.singleton.GetPlayerPrefabName(playername);
-                
-				GameObject prefab = GetPlayerPrefab(prefabname);
-				GameObject player = DatabaseManager.singleton.LoadDataPlayer(prefab, playername);
-                
-				NetworkServer.AddPlayerForConnection(conn, player);
-				ValidatePlayerPosition(player);
-				
-				onlinePlayers[player.name] = player;
-				state = NetworkState.Game;
-				
-				// -- Hooks & Events
-				this.InvokeInstanceDevExtMethods(nameof(LoginPlayer), conn, player, prefab, username, playername); //HOOK
-				eventListeners.OnLoginPlayer.Invoke(conn);
+			string prefabname = DatabaseManager.singleton.GetPlayerPrefabName(playername);
+			
+			GameObject prefab = GetPlayerPrefab(prefabname);
+			GameObject player = DatabaseManager.singleton.LoadDataPlayer(prefab, playername);
+			
+			NetworkServer.AddPlayerForConnection(conn, player);
+			ValidatePlayerPosition(player);
+			
+			onlinePlayers[player.name] = player;
+			state = NetworkState.Game;
+			
+			// -- Hooks & Events
+			this.InvokeInstanceDevExtMethods(nameof(LoginPlayer), conn, player, prefab, username, playername); //HOOK
+			eventListeners.OnLoginPlayer.Invoke(conn);
 
-			}
-			else
-				ServerSendError(conn, systemText.userAlreadyOnline, true);
 		}
 		
 		// -------------------------------------------------------------------------------

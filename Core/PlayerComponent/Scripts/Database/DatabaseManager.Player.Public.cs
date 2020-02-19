@@ -23,18 +23,37 @@ namespace OpenMMO.Database
 			return FindWithQuery<TablePlayer>("SELECT * FROM "+nameof(TablePlayer)+" WHERE playername=?", playername).prefab;
 		}
 		
+		// -------------------------------------------------------------------------------
+		// GetPlayerOnline
+		// 
+		// -------------------------------------------------------------------------------
+		public bool GetPlayerOnline(string playerName)
+		{
+			TablePlayer tablePlayer = FindWithQuery<TablePlayer>("SELECT * FROM "+nameof(TablePlayer)+" WHERE playername=? AND banned=0 AND deleted=0", playerName);
+			
+			if (tablePlayer == null || (tablePlayer != null && tablePlayer.lastlogin == DateTime.MinValue))
+			{
+				return false;
+			}
+			else
+			{
+				double timePassed = (DateTime.UtcNow - tablePlayer.lastlogin).TotalSeconds;
+				return timePassed <= saveInterval;
+			}
+			
+		}
+		
 		// ============================== PUBLIC METHODS =================================
 		
 		// -------------------------------------------------------------------------------
 		// TryPlayerLogin
 		// -------------------------------------------------------------------------------
-		public override bool TryPlayerLogin(string name, string username)
+		public override bool TryPlayerLogin(string playername, string username)
 		{
 			
-			if (!base.TryPlayerLogin(name, username) || !PlayerValid(name, username))
+			if (!base.TryPlayerLogin(playername, username) || !PlayerValid(playername, username))
 				return false;
 			
-			LoginPlayer(name);
 			return true;
 			
 		}

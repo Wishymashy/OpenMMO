@@ -40,7 +40,8 @@ namespace OpenMMO.Database
 		// -------------------------------------------------------------------------------
 		protected void UserRegister(string userName, string userPassword, string userEmail, string userDeviceid)
 		{
-			Insert(new TableUser{ username=userName, password=userPassword, email=userEmail, deviceid=userDeviceid, created=DateTime.UtcNow, lastlogin=DateTime.Now});
+			// -- lastlogin is UtcNow minus SaveInterval to allow immediate login
+			Insert(new TableUser{ username=userName, password=userPassword, email=userEmail, deviceid=userDeviceid, created=DateTime.UtcNow, lastlogin=DateTime.MinValue });
 		}
 		
 		// -------------------------------------------------------------------------------
@@ -84,8 +85,10 @@ namespace OpenMMO.Database
 		// -------------------------------------------------------------------------------
 		[DevExtMethods(nameof(DeleteUser))]
 		protected void DeleteUser(string username)
-		{			
-			this.InvokeInstanceDevExtMethods(nameof(DeleteDataPlayer), username); //HOOK 		// delete player data too
+		{
+		
+			// delete player data too
+			this.InvokeInstanceDevExtMethods(nameof(DeleteDataPlayer), username); //HOOK
 
             DeleteDataUser(username);
 		}
@@ -97,20 +100,6 @@ namespace OpenMMO.Database
 		protected void UserSetConfirmed(string username, int action=1)
 		{
 			Execute("UPDATE "+nameof(TableUser)+" SET confirmed=? WHERE username=?", action, username);
-		}
-		
-		// -------------------------------------------------------------------------------
-		// GetPlayerCount
-		// returns the number of players registered on this user account
-		// -------------------------------------------------------------------------------
-		protected int GetPlayerCount(string username)
-		{
-			List<TablePlayer> result =  Query<TablePlayer>("SELECT * FROM "+nameof(TablePlayer)+" WHERE username=? AND deleted=0", username);
-			
-			if (result == null)
-				return 0;
-			else
-				return result.Count;
 		}
 		
 		// -------------------------------------------------------------------------------
